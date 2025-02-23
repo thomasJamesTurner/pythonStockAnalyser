@@ -1,0 +1,4 @@
+SELECT company.companyName, stockData.prevDayChangePercent, stockData.dateCollected
+FROM company
+INNER JOIN stockData ON company.companyID = stockData.ticker
+WHERE stockData.prevDayChangePercent > 100;

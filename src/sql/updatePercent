@@ -1,0 +1,25 @@
+UPDATE stockData sd
+JOIN (
+    SELECT 
+        s1.ticker,
+        s1.dateCollected,
+        s1.midpoint AS current_midpoint,
+        s2.midpoint AS previous_midpoint
+    FROM stockData s1
+    LEFT JOIN stockData s2
+        ON s1.ticker = s2.ticker
+        AND s1.dateCollected = DATE_ADD(s2.dateCollected, INTERVAL 1 DAY)
+) AS subquery
+    ON sd.ticker = subquery.ticker
+    AND sd.dateCollected = subquery.dateCollected
+SET 
+    sd.midpoint = subquery.current_midpoint,
+    sd.prevDayChange = (subquery.current_midpoint - subquery.previous_midpoint),
+    sd.prevDayChangePercent = 
+        CASE 
+            WHEN subquery.previous_midpoint IS NOT NULL 
+                 AND subquery.previous_midpoint != 0
+            THEN ((subquery.current_midpoint - subquery.previous_midpoint) / subquery.previous_midpoint) * 100
+            ELSE 0
+
+        END;
